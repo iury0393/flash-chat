@@ -65,10 +65,14 @@ class _LoginScreenState extends State<LoginScreen> {
             RoundButton(
               btnColor: Colors.lightBlueAccent,
               btnFunction: () async {
-                final userLogged = await _auth.signInWithEmailAndPassword(
-                    email: email, password: password);
-                if (userLogged != null) {
-                  Navigator.pushNamed(context, ChatScreen.id);
+                try {
+                  final userLogged = await _auth.signInWithEmailAndPassword(
+                      email: email, password: password);
+                  if (userLogged != null) {
+                    Navigator.pushNamed(context, ChatScreen.id);
+                  }
+                } catch (e) {
+                  print(e);
                 }
               },
               btnText: 'Log in',
