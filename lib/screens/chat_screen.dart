@@ -1,4 +1,3 @@
-import 'package:flash_chat/screens/welcome_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flash_chat/constants.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -9,7 +8,6 @@ FirebaseUser loggedInUser;
 
 class ChatScreen extends StatefulWidget {
   static const String id = '/chat';
-
   @override
   _ChatScreenState createState() => _ChatScreenState();
 }
@@ -17,11 +15,13 @@ class ChatScreen extends StatefulWidget {
 class _ChatScreenState extends State<ChatScreen> {
   final messageTextController = TextEditingController();
   final _auth = FirebaseAuth.instance;
+
   String messageText;
 
   @override
   void initState() {
     super.initState();
+
     getCurrentUser();
   }
 
@@ -30,7 +30,6 @@ class _ChatScreenState extends State<ChatScreen> {
       final user = await _auth.currentUser();
       if (user != null) {
         loggedInUser = user;
-        print(loggedInUser.email);
       }
     } catch (e) {
       print(e);
@@ -47,7 +46,7 @@ class _ChatScreenState extends State<ChatScreen> {
               icon: Icon(Icons.close),
               onPressed: () {
                 _auth.signOut();
-                Navigator.pushNamed(context, WelcomeScreen.id);
+                Navigator.pop(context);
               }),
         ],
         title: Text('⚡️Chat'),
@@ -58,7 +57,7 @@ class _ChatScreenState extends State<ChatScreen> {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: <Widget>[
-            MessageStream(),
+            MessagesStream(),
             Container(
               decoration: kMessageContainerDecoration,
               child: Row(
@@ -79,6 +78,7 @@ class _ChatScreenState extends State<ChatScreen> {
                       _firestore.collection('messages').add({
                         'text': messageText,
                         'sender': loggedInUser.email,
+                        'timestamp': DateTime.now().millisecondsSinceEpoch,
                       });
                     },
                     child: Text(
@@ -96,11 +96,12 @@ class _ChatScreenState extends State<ChatScreen> {
   }
 }
 
-class MessageStream extends StatelessWidget {
+class MessagesStream extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return StreamBuilder<QuerySnapshot>(
-      stream: _firestore.collection('messages').snapshots(),
+      stream:
+          _firestore.collection('messages').orderBy('timestamp').snapshots(),
       builder: (context, snapshot) {
         if (!snapshot.hasData) {
           return Center(
@@ -114,6 +115,7 @@ class MessageStream extends StatelessWidget {
         for (var message in messages) {
           final messageText = message.data['text'];
           final messageSender = message.data['sender'];
+
           final currentUser = loggedInUser.email;
 
           final messageBubble = MessageBubble(
@@ -121,6 +123,7 @@ class MessageStream extends StatelessWidget {
             text: messageText,
             isMe: currentUser == messageSender,
           );
+
           messageBubbles.add(messageBubble);
         }
         return Expanded(
@@ -164,15 +167,16 @@ class MessageBubble extends StatelessWidget {
                     bottomLeft: Radius.circular(30.0),
                     bottomRight: Radius.circular(30.0))
                 : BorderRadius.only(
-                    topRight: Radius.circular(30.0),
                     bottomLeft: Radius.circular(30.0),
-                    bottomRight: Radius.circular(30.0)),
+                    bottomRight: Radius.circular(30.0),
+                    topRight: Radius.circular(30.0),
+                  ),
             elevation: 5.0,
             color: isMe ? Colors.lightBlueAccent : Colors.white,
             child: Padding(
               padding: EdgeInsets.symmetric(vertical: 10.0, horizontal: 20.0),
               child: Text(
-                '$text',
+                text,
                 style: TextStyle(
                   color: isMe ? Colors.white : Colors.black54,
                   fontSize: 15.0,
