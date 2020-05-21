@@ -5,6 +5,9 @@
 [![Latest Version on Animated Text Kit](https://img.shields.io/badge/modal_progress_hud-0.1.3-red)](https://pub.dev/packages/modal_progress_hud)
 # FlashChat
 
+![Flash](Flash1.gif)
+![Flash](Flash2.gif)
+![Flash](Flash3.gif)
 
 ## Tabela de Conteúdo
 - <a href="#informações">Informações</a>
